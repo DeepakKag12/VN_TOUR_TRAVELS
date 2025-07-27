@@ -1,6 +1,8 @@
 import React from "react";
 import { Github as GitHub, Linkedin, Mail, MapPin } from "lucide-react";
 
+
+
 const Contact: React.FC = () => {
     return (
         <section id="contact" className="py-20 bg-white">

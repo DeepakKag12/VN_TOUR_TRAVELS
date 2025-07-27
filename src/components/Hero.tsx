@@ -1,6 +1,7 @@
 import React from 'react';
 import { Github as GitHub, Mail, Linkedin, MapPin, Download } from 'lucide-react';
-import deepakImage from './deepak.png';
+import photo from "../deepak.png"; // adjust path if needed
+
 
 
 
@@ -62,10 +63,12 @@ const Hero: React.FC<HeroProps> = ({ scrollToSection }) => {
               <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
                 <img 
                 
-                   src='https://drive.google.com/file/d/1jak4jlfws2alZS_KGUIHp_mJuj8GVZ6A/view?usp=sharing'
-                    alt="Deepak Kag"
-                  
-                   className="w-full h-full object-cover"
+                 src={photo} alt="Deepak Kag" className="w-full h-full object-cover"
+                  // src="/deepak.png" alt="Deepak Kag" 
+
+                  // //  src='https://drive.google.com/file/d/1jak4jlfws2alZS_KGUIHp_mJuj8GVZ6A/view?usp=sharing'
+                  //   // alt="Deepak Kag"
+                  // className="w-full h-full object-cover"
                     />
 
               </div>
