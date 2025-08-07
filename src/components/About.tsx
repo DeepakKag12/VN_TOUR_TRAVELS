@@ -1,65 +1,62 @@
 import React from 'react';
+import { Briefcase, Globe, Hotel, Users } from 'lucide-react';
 
-const About: React.FC = () => {
+const About = () => {
   return (
-    <section id="about" className="py-20 bg-white max-w-7xl mx-auto">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16 animate-fadeIn">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">About Me</h2>
-          <div className="w-20 h-1 bg-indigo-600 mx-auto"></div>
-        </div>
-        
-        <div className="flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0 animate-fadeInLeft">
-            <img 
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1772&q=80" 
-              alt="Deepak Kag" 
-              className="rounded-lg shadow-xl max-w-full h-auto"
-            />
-          </div>
-          
-          <div className="md:w-1/2 md:pl-12 animate-fadeInRight">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Who am I?</h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              I'm Deepak Kag, a passionate front-end and full-stack web developer from Indore. I enjoy crafting clean, responsive interfaces and building complete web applications from scratch using modern technologies like React, Node.js, and MongoDB.
-            </p>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              My interests include Web Development, Data Structures & Algorithms, and system design. I'm experienced with version control tools like Git and GitHub, and I also work with MATLAB for simulations and engineering tasks.
-            </p>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              One of my featured projects is a full-stack house renting platform where users can list and browse rental properties:
-              <br />
-              <a 
-                href="https://houses-renting.onrender.com" 
-                className="text-indigo-600 hover:underline" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                View House Renting Project
-              </a>
-            </p>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Apart from coding, I enjoy playing cricket, listening to music, and continuously learning new tools and frameworks.
-            </p>
+    <section className="py-16 px-4 bg-gray-50" id="services">
+      <div className="max-w-6xl mx-auto text-center">
+        <h2 className="text-4xl font-bold text-indigo-700 mb-6">Our Services</h2>
+        <p className="text-gray-600 mb-12 max-w-3xl mx-auto">
+          VN Tour & Travels offers a wide range of travel solutions tailored for your comfort and convenience.
+        </p>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-gray-800">Name:</h4>
-                <p className="text-gray-600">Deepak Kag</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800">Email:</h4>
-                <p className="text-gray-600">kagdeepak45gmail.com</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800">Location:</h4>
-                <p className="text-gray-600">Indore, MP, India</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800">Availability:</h4>
-                <p className="text-gray-600">Available</p>
-              </div>
-            </div>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Globe className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Domestic & International Tours</h3>
+            <p className="text-sm text-gray-600">
+              Explore destinations across India and the world with our expert planning and guidance.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Briefcase className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Corporate Travel</h3>
+            <p className="text-sm text-gray-600">
+              We handle corporate travel arrangements with professionalism and precision.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Hotel className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Hotel Booking</h3>
+            <p className="text-sm text-gray-600">
+              Partnered with top hotels to ensure comfort and quality stays during your trips.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Users className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Group Travel</h3>
+            <p className="text-sm text-gray-600">
+              Enjoy fun-filled group tours and packages for families, students, and corporate teams.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Globe className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Visa & Passport Assistance</h3>
+            <p className="text-sm text-gray-600">
+              Hassle-free support for applying and obtaining your passport and visa.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white shadow rounded-lg hover:shadow-lg transition">
+            <Hotel className="text-indigo-600 mb-4 w-10 h-10 mx-auto" />
+            <h3 className="text-xl font-semibold mb-2">Customized Packages</h3>
+            <p className="text-sm text-gray-600">
+              Tailored holiday experiences based on your preferences and budget.
+            </p>
           </div>
         </div>
       </div>

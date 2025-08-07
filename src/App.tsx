@@ -1,29 +1,26 @@
+// ================= App.tsx =================
 import React, { useEffect, useState } from 'react';
 import { ChevronUp } from 'lucide-react';
 import Header from './components/Header';
 import Hero from './components/Hero';
-import About from './components/About';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
+import Services from './components/Services';
+import Gallery from './components/Gallery';
+import WhyUs from './components/WhyUs';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+
 import './App.css';
 
 const App: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<string>('home');
-  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
+      setShowScrollTop(window.scrollY > 300);
 
-      const sections = ['home', 'about', 'skills', 'projects', 'experience', 'contact'];
+      const sections = ['home', 'services', 'gallery', 'whyus', 'contact'];
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -67,13 +64,12 @@ const App: React.FC = () => {
         scrollToSection={scrollToSection} 
       />
       <Hero scrollToSection={scrollToSection} />
-      <About />
-      <Skills />
-      <Projects />
-      <Experience />
+      <Services />
+      <Gallery />
+      <WhyUs />
       <Contact />
       <Footer />
-      
+
       {showScrollTop && (
         <button 
           onClick={scrollToTop}
