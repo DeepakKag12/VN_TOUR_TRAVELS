@@ -4,7 +4,9 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-  "start": "node src/server.js"
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "vercel-build": "echo 'No build needed for serverless'"
   },
   "dependencies": {
     "express": "^4.18.2",
