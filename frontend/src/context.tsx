@@ -9,10 +9,21 @@ const AuthContext = createContext<AuthContextType>({ user: null, setUser: () => 
 export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => { // try restore
-    const attempt = () => {
+    const attempt = async () => {
       const token = localStorage.getItem('token');
       if (token) {
-        me().then(res => setUser(res.user)).catch(()=>localStorage.removeItem('token'));
+        try {
+          const res = await me();
+          if (res && res.user && typeof res.user === 'object') {
+            setUser(res.user);
+          } else {
+            console.warn('Invalid user response:', res);
+            localStorage.removeItem('token');
+          }
+        } catch (error) {
+          console.warn('Auth check failed:', error);
+          localStorage.removeItem('token');
+        }
       }
     };
     attempt();

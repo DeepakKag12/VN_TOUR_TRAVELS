@@ -32,13 +32,30 @@ api.interceptors.request.use(cfg => {
 });
 
 // Global 401 handler -> dispatch custom event for logout
-api.interceptors.response.use(r=>r, err => {
-  if (err.response && err.response.status === 401) {
-    localStorage.removeItem('token');
-    window.dispatchEvent(new CustomEvent('auth:logout'));
+api.interceptors.response.use(
+  response => response,
+  error => {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error or server unreachable:', error.message);
+      return Promise.reject(new Error('Unable to connect to server. Please check your internet connection.'));
+    }
+    
+    // Handle 401 unauthorized
+    if (error.response.status === 401) {
+      localStorage.removeItem('token');
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+    }
+    
+    // Ensure error response has proper structure
+    const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    return Promise.reject({
+      message: errorMessage,
+      status: error.response?.status,
+      data: error.response?.data
+    });
   }
-  return Promise.reject(err);
-});
+);
 
 export interface Model {
   id: number;
