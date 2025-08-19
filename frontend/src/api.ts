@@ -4,6 +4,10 @@ import axios from 'axios';
 // Priority: explicit VITE_API_BASE_URL > window.__API_BASE_URL__ (if injected) > same-origin '/api' (proxy or monolith) > localhost fallback
 const envBase = (import.meta as any).env?.VITE_API_BASE_URL || (window as any).__API_BASE_URL__;
 let resolvedBase = envBase;
+// Dev convenience: if running on localhost and env points to deployed domain, switch to /api to leverage Vite proxy & avoid CORS.
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && envBase && /vn-tour-travels-.*\.vercel\.app/.test(envBase)) {
+  resolvedBase = '/api';
+}
 if(!resolvedBase){
   if(typeof window !== 'undefined'){
     // If running on vercel (frontend only) and no env set, we cannot reach localhost.
