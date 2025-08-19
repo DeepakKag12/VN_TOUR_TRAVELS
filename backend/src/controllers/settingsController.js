@@ -6,19 +6,24 @@ import { Settings } from '../models/Settings.js';
 function sanitizePhone(p){ return String(p||'').replace(/[^+\d\s-]/g,'').trim(); }
 
 export const getSettings = async (_req,res) => {
-  if(isDbConnected()){
-    let doc = await Settings.findById('site');
-    if(!doc){ doc = await Settings.create({ _id:'site' }); }
-    else {
-      let changed = false;
-      if(!doc.phone || /00000/.test(doc.phone)) { doc.phone = '+91 91098 79836'; changed = true; }
-      if((!doc.phones || doc.phones.length===0)) { doc.phones = ['+91 99938 83995']; changed = true; }
-      if(doc.address === 'Your Address Here' || !doc.address) { doc.address = 'Scheme No 71, Gumasta Nagar, Indore (M.P.)'; changed = true; }
-      if(changed) await doc.save();
+  try {
+    if(isDbConnected()){
+      let doc = await Settings.findById('site');
+      if(!doc){ doc = await Settings.create({ _id:'site' }); }
+      else {
+        let changed = false;
+        if(!doc.phone || /00000/.test(doc.phone)) { doc.phone = '+91 91098 79836'; changed = true; }
+        if((!doc.phones || doc.phones.length===0)) { doc.phones = ['+91 99938 83995']; changed = true; }
+        if(doc.address === 'Your Address Here' || !doc.address) { doc.address = 'Scheme No 71, Gumasta Nagar, Indore (M.P.)'; changed = true; }
+        if(changed) await doc.save();
+      }
+      return res.json(doc);
     }
-    return res.json(doc);
+    res.json(store.siteSettings);
+  } catch(e){
+    console.error('[getSettings] failed', e);
+    res.status(500).json({ error:'Failed to load settings', details: e.message });
   }
-  res.json(store.siteSettings);
 };
 
 export const updateSettings = async (req,res) => {

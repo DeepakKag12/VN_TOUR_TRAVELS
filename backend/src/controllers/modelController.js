@@ -40,6 +40,7 @@ export const listModels = async (req, res) => {
     ];
   }
   const docs = await ModelItem.find(filter).sort({ createdAt: -1 });
+  console.log('[listModels] filter', filter, 'returned', docs.length);
   const updates = [];
   for(const doc of docs){
     if(doc.nid === undefined || doc.nid === null){

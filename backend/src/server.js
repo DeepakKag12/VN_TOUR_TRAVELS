@@ -46,6 +46,10 @@ const boot = async () => {
     process.exit(1);
   }
   console.log('[BOOT] MongoDB connected (mongo mode only)');
+  try {
+    const modelCount = await ModelItem.countDocuments();
+    console.log(`[BOOT] ModelItem documents present: ${modelCount}`);
+  } catch(e){ console.warn('[BOOT] Could not count ModelItem docs:', e.message); }
   // Seed / update admin
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@vntravels.local';
   const adminUsername = process.env.ADMIN_USERNAME || 'admin';

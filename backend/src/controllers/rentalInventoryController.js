@@ -5,13 +5,18 @@ import { getNextSeq } from '../services/sequence.js';
 import { uploadBuffer } from '../services/cloudinary.js';
 
 export const listRentalItems = async (req,res) => {
-  if(mongoose.connection.readyState!==1) return res.json([]);
-  const { category, q } = req.query;
-  const filter = {};
-  if(category) filter.category = category;
-  if(q){ const term = String(q); filter.$or = [ { name:{ $regex:term,$options:'i'} }, { description:{ $regex:term,$options:'i'} } ]; }
-  const docs = await RentalItem.find(filter).sort({ createdAt:-1 });
-  res.json(docs.map(d=>({ ...d.toObject(), id: d.nid })));
+  try {
+    if(mongoose.connection.readyState!==1) return res.json([]);
+    const { category, q } = req.query;
+    const filter = {};
+    if(category) filter.category = category;
+    if(q){ const term = String(q); filter.$or = [ { name:{ $regex:term,$options:'i'} }, { description:{ $regex:term,$options:'i'} } ]; }
+    const docs = await RentalItem.find(filter).sort({ createdAt:-1 });
+    res.json(docs.map(d=>({ ...d.toObject(), id: d.nid })));
+  } catch(e){
+    console.error('[listRentalItems] failed', e);
+    res.status(500).json({ error:'Failed to load rental items', details:e.message });
+  }
 };
 
 export const getRentalItem = async (req,res) => {
