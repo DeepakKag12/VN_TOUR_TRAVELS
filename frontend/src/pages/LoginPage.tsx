@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
           <button disabled={loading} className='w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md py-2.5 text-sm font-semibold shadow-sm transition'>{loading? 'Signing in...':'Login'}</button>
           <p className='text-[11px] text-slate-400 text-center'>Forgot password? (Coming soon)</p>
         </form>
-        <p className='mt-4 text-center text-xs text-slate-500'>Admin demo: admin / admin123</p>
+  <p className='mt-4 text-center text-xs text-slate-500'>Admin demo: use configured email or username & password (default Admin@123 or legacy admin123)</p>
       </div>
     </div>
   );

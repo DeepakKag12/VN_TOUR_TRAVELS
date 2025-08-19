@@ -1,3 +1,4 @@
+import 'dotenv/config'; // load environment variables from .env
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -84,6 +85,9 @@ const boot = async () => {
 };
 await boot();
 const PORT = process.env.PORT || 5000;
+
+// Expose storage mode info in every response header for debugging
+app.use((req,res,next)=>{ res.setHeader('X-Storage-Mode', dbMode); next(); });
 
 // CORS handling
 // Accept multiple origins via FRONTEND_ORIGIN env (comma separated), plus local dev defaults.
