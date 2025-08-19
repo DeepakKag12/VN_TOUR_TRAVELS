@@ -240,4 +240,24 @@ export async function updateHotel(id:number, data:Record<string,any>, file:File|
 export async function deleteHotel(id:number){ const res= await api.delete(`/hotels/${id}`); return res.data; }
 export async function fetchHotelAvailability(id:number){ const res = await api.get<{ bookedDates:string[] }>(`/hotels/${id}/availability`); return res.data; }
 
+// Connection test
+export async function testConnection(): Promise<{ success: boolean; error?: string }> {
+  try {
+  await api.get('/health');
+  return { success: true };
+  } catch (error: any) {
+    // Build a richer diagnostic string
+    let details = 'Unknown connection error';
+    if (error?.response) {
+      details = `HTTP ${error.response.status} - ` + (error.response.data?.error || error.response.data?.message || error.message || 'Server error');
+    } else if (error?.request) {
+      details = 'No response (possible CORS / network / DNS)';
+    } else if (error?.message) {
+      details = error.message;
+    }
+    console.error('Connection test failed:', { message: error?.message, details, stack: error?.stack });
+    return { success: false, error: details };
+  }
+}
+
 export default api;

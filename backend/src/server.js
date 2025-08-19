@@ -85,17 +85,35 @@ const boot = async () => {
 await boot();
 const PORT = process.env.PORT || 5000;
 
-// CORS - tighten if frontend origin known via env FRONTEND_ORIGIN
-const frontendOriginEnv = process.env.FRONTEND_ORIGIN;
-let allowedOrigin = true; // Default: reflect request origin
+// CORS handling
+// Accept multiple origins via FRONTEND_ORIGIN env (comma separated), plus local dev defaults.
+// Falls back to reflecting origin ONLY if no list provided and in production we allow the deployed host.
+const devOrigins = ['http://localhost:5173','http://localhost:5174','http://localhost:5175'];
+const configuredOrigins = (process.env.FRONTEND_ORIGIN || '')
+  .split(',')
+  .map(o=>o.trim())
+  .filter(Boolean);
 
-if (frontendOriginEnv) {
-  // Support comma-separated multiple origins
-  const origins = frontendOriginEnv.split(',').map(origin => origin.trim());
-  allowedOrigin = origins.length === 1 ? origins[0] : origins;
-}
+const allAllowed = new Set([
+  ...configuredOrigins,
+  ...(process.env.NODE_ENV !== 'production' ? devOrigins : [])
+]);
 
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(cors({
+  origin: (origin, cb) => {
+    if(!origin) return cb(null, true); // non-browser or same-origin
+    if(allAllowed.size === 0) {
+      // No explicit list -> allow and echo origin (safer than wildcard with credentials)
+      return cb(null, true);
+    }
+    if(allAllowed.has(origin)) return cb(null, true);
+    console.warn('[CORS] Blocked origin:', origin);
+    return cb(null, false);
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type','Authorization'],
+  methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS']
+}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session({ secret: process.env.SESSION_SECRET || 'dev_session_secret', resave:false, saveUninitialized:false }));

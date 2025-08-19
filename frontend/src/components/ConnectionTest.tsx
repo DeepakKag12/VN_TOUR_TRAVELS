@@ -4,6 +4,7 @@ import { testConnection } from '../api';
 const ConnectionTest: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<'testing' | 'success' | 'failed'>('testing');
   const [errorDetails, setErrorDetails] = useState<string>('');
+  const [lastTried, setLastTried] = useState<string>('');
   const [apiUrl, setApiUrl] = useState<string>('');
 
   useEffect(() => {
@@ -12,8 +13,9 @@ const ConnectionTest: React.FC = () => {
     setApiUrl(envUrl || 'Not set');
 
     // Test connection
-    const runTest = async () => {
+  const runTest = async () => {
       try {
+    setLastTried(new Date().toLocaleTimeString());
         const result = await testConnection();
         if (result.success) {
           setConnectionStatus('success');
@@ -35,6 +37,7 @@ const ConnectionTest: React.FC = () => {
     setErrorDetails('');
     
     try {
+      setLastTried(new Date().toLocaleTimeString());
       const result = await testConnection();
       if (result.success) {
         setConnectionStatus('success');
@@ -69,8 +72,10 @@ const ConnectionTest: React.FC = () => {
       </div>
       
       {errorDetails && (
-        <div className="text-xs text-red-600 mb-2 bg-red-50 p-2 rounded">
-          <strong>Error:</strong> {errorDetails}
+        <div className="text-[11px] text-red-700 mb-2 bg-red-50 p-2 rounded space-y-1">
+          <div><strong>Error:</strong> {errorDetails}</div>
+          <div className="text-[10px] text-red-500">Tried: {lastTried} | Online: {String(navigator.onLine)}</div>
+          <div className="text-[10px] text-slate-500">If this shows 'No response', likely CORS or network block. Open the health URL in a new tab to confirm.</div>
         </div>
       )}
       
