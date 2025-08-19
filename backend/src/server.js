@@ -86,7 +86,15 @@ await boot();
 const PORT = process.env.PORT || 5000;
 
 // CORS - tighten if frontend origin known via env FRONTEND_ORIGIN
-const allowedOrigin = process.env.FRONTEND_ORIGIN || true; // true => reflect request origin
+const frontendOriginEnv = process.env.FRONTEND_ORIGIN;
+let allowedOrigin = true; // Default: reflect request origin
+
+if (frontendOriginEnv) {
+  // Support comma-separated multiple origins
+  const origins = frontendOriginEnv.split(',').map(origin => origin.trim());
+  allowedOrigin = origins.length === 1 ? origins[0] : origins;
+}
+
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
