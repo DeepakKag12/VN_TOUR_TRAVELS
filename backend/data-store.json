@@ -1,0 +1,128 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin",
+      "blocked": false,
+      "email": "admin@test.local",
+      "phone": "",
+      "preferences": {},
+      "notifications": [
+        {
+          "id": "notif_1755609647834",
+          "channel": "whatsapp",
+          "to": "+91-00000-00000",
+          "message": "New tour booking #1 by vinod on 2025-08-20 at 01:30. Amount: ₹500.",
+          "createdAt": "2025-08-19T13:20:47.834Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "username": "user",
+      "password": "user123",
+      "role": "native",
+      "blocked": false,
+      "email": "user@test.local",
+      "phone": "",
+      "preferences": {},
+      "notifications": []
+    },
+    {
+      "id": 3,
+      "username": "vinod",
+      "email": "kagdeepak85@gmail.com",
+      "passwordHash": "$2b$10$/xatzWMFm7CNgJUI.e2zt.7x4uQVBARBu2YPH0KfNZhfQJVEVXae6",
+      "role": "native"
+    }
+  ],
+  "models": [
+    {
+      "id": 1,
+      "name": "Beach Paradise",
+      "description": "Enjoy the best beaches.",
+      "price": 500,
+      "type": "tour",
+      "image": "",
+      "details": "Full package details here.",
+      "origin": "Mumbai",
+      "destination": "Goa",
+      "stops": [
+        "Pune"
+      ],
+      "itinerary": "Day1 Travel, Day2 Beach, Day3 Return"
+    },
+    {
+      "id": "2",
+      "name": "Mountain Adventure",
+      "description": "Explore the mountains.",
+      "price": 700,
+      "type": "bus",
+      "image": "",
+      "details": "Full package details here.",
+      "origin": "Delhi",
+      "destination": "Manali",
+      "stops": [
+        "Chandigarh"
+      ],
+      "itinerary": "Night travel, 2 days stay, return",
+      "departureTime": "",
+      "arrivalTime": ""
+    }
+  ],
+  "bookings": [
+    {
+      "id": 1,
+      "modelId": 1,
+      "userId": 3,
+      "name": "vinod",
+      "email": "kagdeepak85@gmail.com",
+      "date": "2025-08-20",
+      "startTime": "01:30",
+      "endTime": "20:53",
+      "extras": {
+        "checkOut": "2025-08-21",
+        "guests": 1,
+        "serviceType": "tour"
+      },
+      "status": "approved",
+      "promoCode": null,
+      "discount": 0,
+      "finalPrice": 500,
+      "revenueCounted": true
+    }
+  ],
+  "contacts": [],
+  "rentals": [],
+  "siteSettings": {
+    "companyName": "VN Tour & Travels",
+    "phone": "+91-00000-00000",
+    "email": "info@vntourtravels.test",
+    "address": "Your Address Here",
+    "supportHours": "09:00 - 18:00"
+  },
+  "promos": [
+    {
+      "code": "WELCOME10",
+      "type": "percent",
+      "value": 10,
+      "active": true
+    }
+  ],
+  "reviews": [
+    {
+      "id": 1,
+      "modelId": 1,
+      "userId": 3,
+      "rating": 2,
+      "comment": "nice",
+      "createdAt": "2025-08-19T13:20:18.944Z"
+    }
+  ],
+  "analytics": {
+    "bookingCount": 1,
+    "revenue": 500
+  }
+}
