@@ -1,9 +1,8 @@
-import { store } from '../models/store.js';
-import { saveStoreDebounced } from '../services/persistence.js';
+// In-memory store removed: MongoDB only
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { isDbConnected } from '../config/db.js';
+import { isDbConnected } from '../config/db.js'; // still used to guard but fallback removed
 import { User } from '../models/User.js';
 
 function publicUser(u){ return { id: u.id, username: u.username, email: u.email, role: u.role, emailVerified: u.emailVerified }; }
@@ -46,25 +45,7 @@ export const login = async (req, res) => {
     }
     if(!ok) return res.status(401).json({ error:'Invalid credentials' });
   } else {
-    const lowered = credential.toLowerCase();
-    if(credential.includes('@')){
-      user = store.users.find(u => (u.email||'').toLowerCase() === lowered);
-      if(!user) user = store.users.find(u => u.username === credential);
-    } else {
-      user = store.users.find(u => u.username === credential);
-      if(!user) user = store.users.find(u => (u.email||'').toLowerCase() === lowered);
-    }
-    if(!user) return res.status(401).json({ error:'Invalid credentials' });
-    try {
-      if(user.passwordHash){
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if(!ok) return res.status(401).json({ error:'Invalid credentials' });
-      } else {
-        if(user.password !== password) return res.status(401).json({ error:'Invalid credentials' });
-      }
-    } catch(e){
-      return res.status(500).json({ error:'Auth error' });
-    }
+    return res.status(503).json({ error:'Database not connected' });
   }
   const token = jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn:'2d' });
   res.cookie('sessionToken', token, { httpOnly:true, sameSite:'lax', maxAge: 1000*60*60*24*2 });
@@ -97,20 +78,7 @@ export const signup = async (req, res) => {
     res.cookie('sessionToken', token, { httpOnly:true, sameSite:'lax', maxAge: 1000*60*60*24*2 });
     return res.status(201).json({ success:true, user: publicUser(userDoc.toObject()), token });
   } else {
-    if (store.users.some(u => (u.email||'').toLowerCase() === email)) return res.status(409).json({ error: 'Email already registered' });
-    if (!username || !username.trim()) {
-      const base = email.split('@')[0].replace(/[^a-zA-Z0-9_]+/g,'').slice(0,20) || 'user';
-      let candidate = base; let i = 1;
-      while(store.users.some(u=>u.username === candidate)) { candidate = base + i; i++; }
-      username = candidate;
-    } else if (store.users.some(u => u.username === username)) return res.status(409).json({ error: 'Username already exists' });
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = { id: store.users.length + 1, username, email, passwordHash, role: 'native', blocked:false, notifications:[] };
-    store.users.push(user);
-    saveStoreDebounced();
-    const token = jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: '2d' });
-    res.cookie('sessionToken', token, { httpOnly:true, sameSite:'lax', maxAge: 1000*60*60*24*2 });
-    res.status(201).json({ success: true, user: publicUser(user), token });
+    return res.status(503).json({ error:'Database not connected' });
   }
 };
 
@@ -131,14 +99,7 @@ export const requestPasswordReset = async (req, res) => {
     user.passwordResetExpires = Date.now() + 1000*60*30;
     await user.save();
     return res.json({ success:true, resetToken: user.passwordResetToken });
-  } else {
-    const user = store.users.find(u => (u.email||'').toLowerCase() === String(email).toLowerCase());
-    if(!user) return res.json({ success: true });
-    user.passwordResetToken = crypto.randomBytes(20).toString('hex');
-    user.passwordResetExpires = Date.now() + 1000*60*30; // 30 min
-    saveStoreDebounced();
-    return res.json({ success:true, resetToken: user.passwordResetToken });
-  }
+  } else { return res.status(503).json({ error:'Database not connected' }); }
 };
 
 export const resetPassword = async (req, res) => {
@@ -152,14 +113,7 @@ export const resetPassword = async (req, res) => {
     user.passwordResetToken = undefined; user.passwordResetExpires = undefined;
     await user.save();
     return res.json({ success:true });
-  } else {
-    const user = store.users.find(u => u.passwordResetToken === token && u.passwordResetExpires && u.passwordResetExpires > Date.now());
-    if(!user) return res.status(400).json({ error: 'Invalid or expired token' });
-    user.passwordHash = await bcrypt.hash(password, 10);
-    delete user.passwordResetToken; delete user.passwordResetExpires;
-    saveStoreDebounced();
-    return res.json({ success:true });
-  }
+  } else { return res.status(503).json({ error:'Database not connected' }); }
 };
 
 // Email verification (dev-mode: immediate token issuance, pretend email sent)
@@ -174,14 +128,7 @@ export const sendEmailVerification = async (req, res) => {
     user.emailVerifyToken = crypto.randomBytes(16).toString('hex');
     await user.save();
     return res.json({ success:true, verifyToken:user.emailVerifyToken });
-  } else {
-    const user = store.users.find(u => (u.email||'').toLowerCase() === String(email).toLowerCase());
-    if(!user) return res.status(404).json({ error: 'User not found' });
-    if(user.emailVerified) return res.json({ success:true, alreadyVerified:true });
-    user.emailVerifyToken = crypto.randomBytes(16).toString('hex');
-    saveStoreDebounced();
-    return res.json({ success:true, verifyToken:user.emailVerifyToken });
-  }
+  } else { return res.status(503).json({ error:'Database not connected' }); }
 };
 
 export const verifyEmail = async (req, res) => {
@@ -194,12 +141,5 @@ export const verifyEmail = async (req, res) => {
     user.emailVerified = true; user.emailVerifyToken = undefined;
     await user.save();
     return res.json({ success:true });
-  } else {
-    const user = store.users.find(u => u.emailVerifyToken === token);
-    if(!user) return res.status(400).json({ error: 'Invalid token' });
-    user.emailVerified = true;
-    delete user.emailVerifyToken;
-    saveStoreDebounced();
-    return res.json({ success:true });
-  }
+  } else { return res.status(503).json({ error:'Database not connected' }); }
 };

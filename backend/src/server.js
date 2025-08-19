@@ -21,7 +21,6 @@ import adminRoutes from './routes/adminRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import rentalInventoryRoutes from './routes/rentalInventoryRoutes.js';
 import hotelRoutes from './routes/hotelRoutes.js';
-import { loadStoreIfExists } from './services/persistence.js';
 import { connectDB } from './config/db.js';
 import { User } from './models/User.js';
 import { ModelItem } from './models/ModelItem.js';
@@ -39,55 +38,46 @@ app.use(helmet({
 // Basic rate limiting (adjust as needed)
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false });
 app.use(limiter);
-// Attempt DB connection; if missing MONGO_URI fallback to JSON persistence
-let dbMode = 'memory';
+// Mandatory DB connection (no in-memory fallback)
 const boot = async () => {
   const connected = await connectDB();
-  if (!connected) {
-    loadStoreIfExists();
-    console.log('[BOOT] Using in-memory + file persistence (Mongo not connected)');
+  if(!connected){
+    console.error('[BOOT] Fatal: MongoDB connection required. Set MONGO_URI and retry.');
+    process.exit(1);
+  }
+  console.log('[BOOT] MongoDB connected (mongo mode only)');
+  // Seed / update admin
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@vntravels.local';
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+  const adminPass = process.env.ADMIN_PASSWORD || 'Admin@123';
+  let existingAdmin = await User.findOne({ role: 'admin' });
+  const passwordHash = await bcrypt.hash(adminPass, 10);
+  if(!existingAdmin){
+    const count = await User.countDocuments();
+    await User.create({ id: count+1, username: adminUsername, email: adminEmail.toLowerCase(), passwordHash, role: 'admin', emailVerified: true });
+    console.log(`[SEED] Admin user created -> email: ${adminEmail} password: ${adminPass}`);
   } else {
-    dbMode = 'mongo';
-    console.log('[BOOT] Running with MongoDB storage');
-    // Seed or update admin user from .env on every boot
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@vntravels.local';
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPass = process.env.ADMIN_PASSWORD || 'Admin@123';
-    let existingAdmin = await User.findOne({ role: 'admin' });
-    const passwordHash = await bcrypt.hash(adminPass, 10);
-    if(!existingAdmin){
-      const count = await User.countDocuments();
-      await User.create({ id: count+1, username: adminUsername, email: adminEmail.toLowerCase(), passwordHash, role: 'admin', emailVerified: true });
-      console.log(`[SEED] Admin user created -> email: ${adminEmail} password: ${adminPass}`);
-    } else {
-      existingAdmin.email = adminEmail.toLowerCase();
-      existingAdmin.username = adminUsername;
-      existingAdmin.passwordHash = passwordHash;
-      existingAdmin.emailVerified = true;
-      await existingAdmin.save();
-      console.log(`[SEED] Admin user updated -> email: ${adminEmail} password: ${adminPass}`);
-    }
-
-    // Lightweight migration: ensure all ModelItem docs have a numeric nid for compatibility
-    const withoutNid = await ModelItem.find({ $or: [ { nid: { $exists: false } }, { nid: null } ] }).limit(500);
-    if(withoutNid.length){
-      console.log(`[MIGRATE] Assigning nid to ${withoutNid.length} existing model items`);
-      for(const doc of withoutNid){
-        try {
-          doc.nid = await getNextSeq('models');
-          await doc.save();
-        } catch(e){
-          console.warn('[MIGRATE] Failed to set nid on model', doc._id.toString(), e.message);
-        }
-      }
+    existingAdmin.email = adminEmail.toLowerCase();
+    existingAdmin.username = adminUsername;
+    existingAdmin.passwordHash = passwordHash;
+    existingAdmin.emailVerified = true;
+    await existingAdmin.save();
+    console.log(`[SEED] Admin user updated -> email: ${adminEmail} password: ${adminPass}`);
+  }
+  // Ensure nid migration
+  const withoutNid = await ModelItem.find({ $or: [ { nid: { $exists: false } }, { nid: null } ] }).limit(500);
+  if(withoutNid.length){
+    console.log(`[MIGRATE] Assigning nid to ${withoutNid.length} existing model items`);
+    for(const doc of withoutNid){
+      try { doc.nid = await getNextSeq('models'); await doc.save(); } catch(e){ console.warn('[MIGRATE] Failed to set nid', doc._id.toString(), e.message); }
     }
   }
 };
 await boot();
 const PORT = process.env.PORT || 5000;
 
-// Expose storage mode info in every response header for debugging
-app.use((req,res,next)=>{ res.setHeader('X-Storage-Mode', dbMode); next(); });
+// Expose storage mode (always mongo now)
+app.use((req,res,next)=>{ res.setHeader('X-Storage-Mode', 'mongo'); next(); });
 
 // CORS handling
 // Accept multiple origins via FRONTEND_ORIGIN env (comma separated), plus local dev defaults.
@@ -125,7 +115,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Public routes
-app.get('/', (_req, res) => res.json({ status: 'OK', service: 'VN Tour Travels API', mode: dbMode }));
+app.get('/', (_req, res) => res.json({ status: 'OK', service: 'VN Tour Travels API', mode: 'mongo' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/contacts', contactRoutes); // submissions
 app.use('/api/contact-info', contactInfoRoutes); // public GET / admin PUT
@@ -146,22 +136,7 @@ app.use('/api/admin', requireAuth, adminRoutes);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 
 // Health & route summary (diagnostics)
-app.get('/api/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    server: 'modern',
-    mode: dbMode,
-    time: new Date().toISOString(),
-    sampleRoutes: [
-      'GET /api/health',
-      'POST /api/auth/login',
-      'GET /api/models',
-      'POST /api/bookings',
-      'POST /api/bookings/:id/cancel',
-      'GET /api/hotels/:id/availability'
-    ]
-  });
-});
+app.get('/api/health', (_req, res) => { res.json({ status:'ok', server:'modern', mode:'mongo', time:new Date().toISOString() }); });
 
 // 404 handler
 app.use((req, res) => {

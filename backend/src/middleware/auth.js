@@ -1,4 +1,4 @@
-import { store } from '../models/store.js';
+import { User } from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change';
@@ -11,11 +11,14 @@ export const requireAuth = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-  const user = store.users.find(u => u.id === payload.sub);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-  if (user.blocked) return res.status(403).json({ error: 'User blocked' });
-  req.user = user;
-    next();
+    // Fetch from Mongo
+    User.findOne({ id: payload.sub }).then(user => {
+      if(!user) return res.status(401).json({ error:'Unauthorized' });
+      if(user.blocked) return res.status(403).json({ error:'User blocked' });
+      req.user = user;
+      next();
+    }).catch(()=> res.status(401).json({ error:'Unauthorized' }));
+    return;
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
