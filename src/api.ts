@@ -1,8 +1,25 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api'
-});
+// Determine API base URL (supports deployed environments)
+// Priority: explicit VITE_API_BASE_URL > window.__API_BASE_URL__ (if injected) > same-origin '/api' (proxy or monolith) > localhost fallback
+const envBase = (import.meta as any).env?.VITE_API_BASE_URL || (window as any).__API_BASE_URL__;
+let resolvedBase = envBase;
+if(!resolvedBase){
+  if(typeof window !== 'undefined'){
+    // If running on vercel (frontend only) and no env set, we cannot reach localhost.
+    // Use relative '/api' so a reverse proxy (if configured) works. Otherwise instruct user to set env.
+    resolvedBase = '/api';
+    if(window.location.hostname === 'localhost'){
+      resolvedBase = 'http://localhost:5000/api';
+    }
+  } else {
+    resolvedBase = 'http://localhost:5000/api';
+  }
+}
+
+// Ensure no trailing slash duplication
+resolvedBase = resolvedBase.replace(/\/$/, '');
+const api = axios.create({ baseURL: resolvedBase });
 
 // Attach token if present
 api.interceptors.request.use(cfg => {
